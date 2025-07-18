@@ -1,12 +1,12 @@
-# .github/workflows/custom-docker-build.yml
+# .github/workflows/docker-build.yml
 
-name: 手动构建多架构Docker镜像
+name: 构建多架构Docker镜像 → ghcr.io,dockerhub
 
 on:
   workflow_dispatch:
     inputs:
       repo_url:
-        description: '要克隆的GitHub仓库链接 (例如: https://github.com/your-name/your-repo.git)'
+        description: '要构建的GitHub仓库链接 (例如: https://github.com/your-name/your-repo.git)'
         required: true
       repo_ref:
         description: '要检出的分支、标签或提交SHA (例如: main)'
@@ -17,11 +17,11 @@ on:
         required: true
         default: 'my-app'
       tags:
-        description: '要推送的标签, 逗号分隔 (例如: v1.0,latest)'
+        description: '要推送的标签, 逗号分隔 (例如: latest,v1.0)'
         required: true
         default: 'latest'
       platforms:
-        description: '要构建的平台, 逗号分隔 (留空则默认全部)'
+        description: '要构建的平台, 逗号分隔'
         required: false
         default: 'linux/amd64,linux/arm64,linux/arm/v7'
 
@@ -58,15 +58,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 关键修改：使用正确的语法来创建多行输出变量
       - name: 6. 准备标签列表
         id: prep_tags
         run: |
-          # 声明一个名为 "tags" 的多行输出，使用 EOF 作为分隔符
           echo "tags<<EOF" >> $GITHUB_OUTPUT
-          # 将逗号分隔的输入转换为换行分隔，并追加到输出文件中
           echo "${{ github.event.inputs.tags }}" | sed 's/,/\n/g' >> $GITHUB_OUTPUT
-          # 写入结束分隔符
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 7. 提取 Docker 元数据并生成标签
