@@ -1,6 +1,6 @@
 # .github/workflows/docker-build.yml
 
-name: 构建多架构Docker镜像
+name: 手动构建多架构Docker镜像
 
 on:
   # 允许您在 Actions 标签页手动触发此工作流
@@ -17,6 +17,11 @@ on:
         description: '要设置的镜像名称 (例如: my-awesome-app)'
         required: true
         default: 'my-app'
+      tags:
+        # 新增：标签输入
+        description: '要推送的标签, 逗号分隔 (例如: v1.0,latest)'
+        required: true
+        default: 'latest'
       platforms:
         description: '要构建的平台, 逗号分隔 (留空则默认全部)'
         required: false
@@ -25,6 +30,11 @@ on:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+    # 新增：为 GITHUB_TOKEN 授予写包权限，这是修复错误的关键
+    permissions:
+      contents: read
+      packages: write
+      
     steps:
       - name: 1. 克隆指定的代码仓库
         run: |
@@ -55,20 +65,18 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # 列出所有要推送的镜像仓库和名称
           images: |
-            ghcr.io/${{ github.actor }}/${{ github.event.inputs.image_name }}
+            ghcr.io/${{ github.repository_owner }}/${{ github.event.inputs.image_name }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.image_name }}
+          # 修改：使用输入的标签，而不是自动生成
+          tags: |
+            type=csv,value=${{ github.event.inputs.tags }}
 
       - name: 7. 构建并推送到多个镜像仓库
         uses: docker/build-push-action@v6
         with:
-          # 构建上下文指向我们克隆的 `app` 目录
           context: ./app
-          # 使用用户输入的平台信息
           platforms: ${{ github.event.inputs.platforms }}
-          # 总是进行推送，因为这是手动触发的
           push: true
-          # 使用元数据步骤生成的标签
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
