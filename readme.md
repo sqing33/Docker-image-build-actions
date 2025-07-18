@@ -35,6 +35,9 @@
         *   **值**: 您的 Docker Hub 访问令牌 (Access Token)。**强烈建议使用 Access Token 而非账户密码**。
         *   *如何获取 Access Token？* 登录 [Docker Hub](https://hub.docker.com/)，进入 **"Account Settings"** -> **"Security"** -> **"New Access Token"** 来生成一个。
 
+<img width="1905" height="962" alt="image" src="https://github.com/user-attachments/assets/5ebb3c43-beec-4451-b483-6a04c4a8f81f" />
+
+
 ### 步骤 3: 运行工作流
 
 ▶️ 一切准备就绪后，您可以开始构建了！
@@ -44,6 +47,9 @@
 3.  点击右侧的 **"Run workflow"** 下拉按钮。
 4.  您会看到一个表单，请根据您的需求填写参数。
 5.  点击绿色的 **"Run workflow"** 按钮，开始执行构建和推送任务！
+
+<img width="320" height="510" alt="image" src="https://github.com/user-attachments/assets/dcff4a00-84f8-4e74-be3a-8dc218cb6b34" />
+
 
 ## ⚙️ 工作流输入参数
 
