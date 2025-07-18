@@ -1,9 +1,8 @@
-# .github/workflows/docker-build.yml
+# .github/workflows/custom-docker-build.yml
 
 name: 手动构建多架构Docker镜像
 
 on:
-  # 允许您在 Actions 标签页手动触发此工作流
   workflow_dispatch:
     inputs:
       repo_url:
@@ -18,7 +17,6 @@ on:
         required: true
         default: 'my-app'
       tags:
-        # 新增：标签输入
         description: '要推送的标签, 逗号分隔 (例如: v1.0,latest)'
         required: true
         default: 'latest'
@@ -30,7 +28,6 @@ on:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
-    # 新增：为 GITHUB_TOKEN 授予写包权限，这是修复错误的关键
     permissions:
       contents: read
       packages: write
@@ -52,7 +49,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 5. 登录到 Docker Hub
@@ -61,18 +58,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 6. 提取 Docker 元数据并生成标签
+      # 新增步骤：将逗号分隔的标签转换为多行格式
+      - name: 6. 准备标签列表
+        id: prep_tags
+        run: |
+          # 将输入的 "v1,v2" 转换为 "v1\nv2" 的格式
+          echo "tags=$(echo '${{ github.event.inputs.tags }}' | sed 's/,/\n/g')" >> $GITHUB_OUTPUT
+
+      - name: 7. 提取 Docker 元数据并生成标签
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ github.event.inputs.image_name }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.inputs.image_name }}
-          # 修改：使用输入的标签，而不是自动生成
-          tags: |
-            type=csv,value=${{ github.event.inputs.tags }}
+          # 修改：直接使用上一步生成的、换行分隔的标签列表
+          tags: ${{ steps.prep_tags.outputs.tags }}
 
-      - name: 7. 构建并推送到多个镜像仓库
+      - name: 8. 构建并推送到多个镜像仓库
         uses: docker/build-push-action@v6
         with:
           context: ./app
