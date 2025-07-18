@@ -1,12 +1,12 @@
 # .github/workflows/docker-build.yml
 
-name: 构建多架构Docker镜像 → ghcr.io,dockerhub
+name: 构建多架构Docker镜像 → ghcr.io, DockerHub
 
 on:
   workflow_dispatch:
     inputs:
       repo_url:
-        description: '要构建的GitHub仓库链接 (例如: https://github.com/your-name/your-repo.git)'
+        description: '要构建的 Git 仓库克隆链接 (例如: https://github.com/your-name/your-repo.git)'
         required: true
       repo_ref:
         description: '要检出的分支、标签或提交SHA (例如: main)'
@@ -22,7 +22,7 @@ on:
         default: 'latest'
       platforms:
         description: '要构建的平台, 逗号分隔'
-        required: false
+        required: true
         default: 'linux/amd64,linux/arm64,linux/arm/v7'
 
 jobs:
